@@ -80,6 +80,21 @@
   <div class="response" id="response">Response will appear here...</div>
 </div>
 
+<h3>Weak Topic Analysis</h3>
+<div class="card">
+  <input id="analysis_name" placeholder="Student Name">
+  <button onclick="showWeakTopicAnalysis()">Show Weak Topic Analysis</button>
+  <div class="response" id="weakAnalysis">Weak topic analysis will appear here...</div>
+</div>
+
+<h3>Progress</h3>
+<div class="card">
+  <input id="progress_name" placeholder="Student Name">
+  <button onclick="showProgress()">Show Progress</button>
+  <div class="response" id="progressBox">Progress will appear here...</div>
+</div>
+
+
 <script>
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -98,7 +113,7 @@ async function addProfile() {
   });
 
   const result = await res.json();
-  alert(result.message);
+  alert(result.message || "Profile added");
 }
 
 async function askDoubt() {
@@ -116,8 +131,58 @@ async function askDoubt() {
   });
 
   const result = await res.json();
-  document.getElementById("response").innerText = result.response;
+  document.getElementById("response").innerText = result.response || "No response";
 }
+
+async function showWeakTopicAnalysis() {
+  const name = document.getElementById("analysis_name").value;
+
+  try {
+    const res = await fetch(BASE_URL + "/weak_topic/" + name);
+    const result = await res.json();
+
+    if (result.response) {
+      document.getElementById("weakAnalysis").innerText = result.response;
+      return;
+    }
+
+    let output = "Weak Subject: " + result.weak_subject + "\n\nDetails:\n";
+
+    for (let key in result.details) {
+      output += key + " : " + result.details[key] + " doubts\n";
+    }
+
+    document.getElementById("weakAnalysis").innerText = output;
+  } catch (error) {
+    document.getElementById("weakAnalysis").innerText = "Error loading weak topic analysis.";
+  }
+}
+
+async function showProgress() {
+  const name = document.getElementById("progress_name").value;
+
+  try {
+    const res = await fetch(BASE_URL + "/progress/" + name);
+    const result = await res.json();
+
+    if (result.response) {
+      document.getElementById("progressBox").innerText = result.response;
+      return;
+    }
+
+    let output = "Total Doubts: " + result.total_doubt + "\n\nSubject-wise Progress:\n";
+
+    for (let key in result.subjectwise) {
+      output += key + " : " + result.subjectwise[key] + "\n";
+    }
+
+    document.getElementById("progressBox").innerText = output;
+  } catch (error) {
+    document.getElementById("progressBox").innerText = "Error loading progress.";
+  }
+}
+
+
 </script>
 
 </body>
