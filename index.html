@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Mentor</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    h2 {
+      text-align: center;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .response {
+      margin-top: 20px;
+      background: #eee;
+      padding: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>AI Mentor</h2>
+
+  <!-- Profile Section -->
+  <h3>Add Profile</h3>
+  <input id="name" placeholder="Name">
+  <input id="class" placeholder="Current Class">
+  <input id="exam" placeholder="Target Exam">
+  <input id="weak" placeholder="Weak Subject">
+
+  <button onclick="addProfile()">Add Profile</button>
+
+  <hr>
+
+  <!-- Doubt Section -->
+  <h3>Ask Doubt</h3>
+  <input id="d_name" placeholder="Name (same as profile)">
+  
+  <select id="subject">
+    <option>Physics</option>
+    <option>Chemistry</option>
+    <option>Maths</option>
+    <option>Biology</option>
+  </select>
+
+  <select id="mode">
+    <option>quick doubt mode</option>
+    <option>exam mode</option>
+    <option>depth mode</option>
+  </select>
+
+  <textarea id="query" placeholder="Enter your doubt"></textarea>
+
+  <button onclick="askDoubt()">Ask</button>
+
+  <div class="response" id="response">Response will appear here...</div>
+</div>
+
+<script>
+const BASE_URL = "http://127.0.0.1:8000";
+
+async function addProfile() {
+  const data = {
+    name: document.getElementById("name").value,
+    current_class: document.getElementById("class").value,
+    target_exam: document.getElementById("exam").value,
+    weak_subject: document.getElementById("weak").value
+  };
+
+  const res = await fetch(BASE_URL + "/addprofile", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+  alert(result.message);
+}
+
+async function askDoubt() {
+  const data = {
+    name: document.getElementById("d_name").value,
+    subject: document.getElementById("subject").value,
+    mode: document.getElementById("mode").value,
+    query: document.getElementById("query").value
+  };
+
+  const res = await fetch(BASE_URL + "/ask-doubt", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+  document.getElementById("response").innerText = result.response;
+}
+</script>
+
+</body>
+</html>
