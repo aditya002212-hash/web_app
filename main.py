@@ -118,9 +118,42 @@ def add_profile(profile: Profile):
     return {"message": "Profile added successfully"}
 
 @web_app.get('/student_profile/{name}')
-def student_profile():
-    if 'name' not in profiledata:
+def student_profile(name:str):
+    if name not in profiledata:
         return{'response ': 'profile not found'}
     else:
         return{'history':profiledata['name']['history']}
+
+
+@web_app.get('/weak_topic/{name}')
+def weak_topic(name:str):
+    count={}
+    if name not in profiledata:
+        return {'response':'add your profile '}
+    for item in profiledata[name]['history']:
+        if item['subject']not in count:
+            count[item['subject']]=0
+        else:
+            count[item['subject']]+=1
+    if not count:
+        return 'no data availabe'
+    weak=max(count,key=count.get)
+    return{'weak_subject':weak,
+           'details':count}
+@web_app.get('/progress/{name}')
+def progress(name:str):
+    if name not in profiledata:
+        return{'response': 'add your profile'}
+    history=(profiledata['name']['history'])
+    total=len(history)
+    subjects={}
+    for item in history:
+        sub=item['subject']
+        subjects[sub]=subjects.get(sub,0)+1
+    return { 'total_doubt':
+            total,
+            'subjectwise':
+            subjects}
+
+
 
