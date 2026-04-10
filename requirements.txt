@@ -1,5 +1,5 @@
-FastAPI
-dotenv
-os
-google.genai
+fastapi
+uvicorn
+google-genai
+python-dotenv
 pydantic
