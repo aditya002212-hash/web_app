@@ -1,0 +1,5 @@
+FastAPI
+dotenv
+os
+google.genai
+pydantic
