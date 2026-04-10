@@ -7,10 +7,10 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 40px auto;
       padding: 20px;
-      background: #f5f5f5;
+      background: #b11111;
     }
 
     .container {
@@ -20,8 +20,8 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
-    h1 {
-      margin-bottom: 20px;
+    h1, h2, h3 {
+      margin-bottom: 16px;
     }
 
     label {
@@ -46,25 +46,37 @@
       min-height: 120px;
     }
 
+    button {
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
     .button-row {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .button-row button {
       width: auto;
       flex: 1;
-      cursor: pointer;
+      min-width: 150px;
     }
 
-    .answer-box {
+    .answer-box, .info-box {
       margin-top: 20px;
       padding: 16px;
       background: #fafafa;
       border: 1px solid #ddd;
       border-radius: 8px;
       white-space: pre-wrap;
-      min-height: 120px;
+      min-height: 80px;
     }
 
     .status {
@@ -79,45 +91,131 @@
     .loading {
       color: #444;
     }
+
+    .section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>AI Mentor for JEE/NEET</h1>
 
-    <label for="name">Student Name</label>
-    <input type="text" id="name" placeholder="Enter your name" />
+    <h2>Add Profile</h2>
 
-    <label for="subject">Subject</label>
-    <select id="subject">
-      <option value="Physics">Physics</option>
-      <option value="Chemistry">Chemistry</option>
-      <option value="Maths">Maths</option>
-      <option value="Biology">Biology</option>
-    </select>
+    <label for="profile_name">Student Name</label>
+    <input type="text" id="profile_name" placeholder="Enter your name" />
 
-    <label for="mode">Mode</label>
-    <select id="mode">
-      <option value="exam mode">Exam Mode</option>
-      <option value="quick doubt mode">Quick Doubt Mode</option>
-      <option value="depth mode">Depth Mode</option>
-    </select>
+    <label for="current_class">Current Class</label>
+    <input type="text" id="current_class" placeholder="Class 11 / Class 12 / Dropper" />
 
-    <label for="question">Your Doubt</label>
-    <textarea id="question" placeholder="Ask your doubt here..."></textarea>
+    <label for="target_exam">Target Exam</label>
+    <input type="text" id="target_exam" placeholder="JEE / NEET" />
+
+    <label for="weak_subject">Weak Subject</label>
+    <input type="text" id="weak_subject" placeholder="Physics / Chemistry / Maths / Biology" />
 
     <div class="button-row">
-      <button onclick="askDoubt()">Ask Doubt</button>
-      <button onclick="clearForm()">Clear</button>
+      <button onclick="addProfile()">Add Profile</button>
+      <button onclick="showHistory()">History</button>
+      <button onclick="showWeakSubject()">Weak Subject</button>
+      <button onclick="showProgress()">Progress</button>
     </div>
 
-    <div id="status" class="status"></div>
+    <div id="profileStatus" class="status"></div>
 
-    <h3>Answer</h3>
-    <div id="answer" class="answer-box">Your answer will appear here...</div>
+    <div class="section">
+      <h2>Ask Doubt</h2>
+
+      <label for="name">Student Name</label>
+      <input type="text" id="name" placeholder="Enter your name" />
+
+      <label for="subject">Subject</label>
+      <select id="subject">
+        <option value="Physics">Physics</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Maths">Maths</option>
+        <option value="Biology">Biology</option>
+      </select>
+
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="exam mode">Exam Mode</option>
+        <option value="quick doubt mode">Quick Doubt Mode</option>
+        <option value="depth mode">Depth Mode</option>
+      </select>
+
+      <label for="question">Your Doubt</label>
+      <textarea id="question" placeholder="Ask your doubt here..."></textarea>
+
+      <div class="button-row">
+        <button onclick="askDoubt()">Ask Doubt</button>
+        <button onclick="clearForm()">Clear</button>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <h3>Answer</h3>
+      <div id="answer" class="answer-box">Your answer will appear here...</div>
+    </div>
+
+    <div class="section">
+      <h2>Student Data</h2>
+
+      <h3>History</h3>
+      <div id="historyBox" class="info-box">History will appear here...</div>
+
+      <h3>Weak Subject</h3>
+      <div id="weakBox" class="info-box">Weak subject analysis will appear here...</div>
+
+      <h3>Progress</h3>
+      <div id="progressBox" class="info-box">Progress will appear here...</div>
+    </div>
   </div>
 
   <script>
+    const BASE_URL = "http://127.0.0.1:8000";
+
+    async function addProfile() {
+      const name = document.getElementById("profile_name").value.trim();
+      const currentClass = document.getElementById("current_class").value.trim();
+      const targetExam = document.getElementById("target_exam").value.trim();
+      const weakSubject = document.getElementById("weak_subject").value.trim();
+      const profileStatus = document.getElementById("profileStatus");
+
+      if (!name || !currentClass || !targetExam || !weakSubject) {
+        profileStatus.textContent = "Please fill all profile fields.";
+        profileStatus.className = "status error";
+        return;
+      }
+
+      try {
+        const response = await fetch(BASE_URL + "/addprofile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: name,
+            current_class: currentClass,
+            target_exam: targetExam,
+            weak_subject: weakSubject
+          })
+        });
+
+        const data = await response.json();
+        profileStatus.textContent = data.message || "Profile added successfully.";
+        profileStatus.className = "status";
+
+        document.getElementById("name").value = name;
+      } catch (error) {
+        profileStatus.textContent = "Error: " + error.message;
+        profileStatus.className = "status error";
+      }
+    }
+
     async function askDoubt() {
       const name = document.getElementById("name").value.trim();
       const subject = document.getElementById("subject").value;
@@ -138,7 +236,7 @@
       answerBox.textContent = "";
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/ask-doubt", {
+        const response = await fetch(BASE_URL + "/ask-doubt", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -164,6 +262,97 @@
         answerBox.textContent = "";
         status.textContent = "Error: " + error.message;
         status.className = "status error";
+      }
+    }
+
+    async function showHistory() {
+      const name = document.getElementById("profile_name").value.trim() || document.getElementById("name").value.trim();
+      const historyBox = document.getElementById("historyBox");
+
+      if (!name) {
+        historyBox.textContent = "Please enter student name first.";
+        return;
+      }
+
+      try {
+        const response = await fetch(BASE_URL + "/student_profile/" + name);
+        const data = await response.json();
+
+        if (!data.history || data.history.length === 0) {
+          historyBox.textContent = "No history found.";
+          return;
+        }
+
+        let output = "";
+        data.history.forEach((item, index) => {
+          output += `Doubt ${index + 1}\n`;
+          output += `Subject: ${item.subject}\n`;
+          output += `Mode: ${item.mode}\n`;
+          output += `Query: ${item.query}\n`;
+          output += `\n----------------------\n\n`;
+        });
+
+        historyBox.textContent = output;
+      } catch (error) {
+        historyBox.textContent = "Error loading history.";
+      }
+    }
+
+    async function showWeakSubject() {
+      const name = document.getElementById("profile_name").value.trim() || document.getElementById("name").value.trim();
+      const weakBox = document.getElementById("weakBox");
+
+      if (!name) {
+        weakBox.textContent = "Please enter student name first.";
+        return;
+      }
+
+      try {
+        const response = await fetch(BASE_URL + "/weak_topic/" + name);
+        const data = await response.json();
+
+        if (data.response) {
+          weakBox.textContent = data.response;
+          return;
+        }
+
+        let output = `Weak Subject: ${data.weak_subject}\n\nDetails:\n`;
+        for (let key in data.details) {
+          output += `${key}: ${data.details[key]} doubts\n`;
+        }
+
+        weakBox.textContent = output;
+      } catch (error) {
+        weakBox.textContent = "Error loading weak subject.";
+      }
+    }
+
+    async function showProgress() {
+      const name = document.getElementById("profile_name").value.trim() || document.getElementById("name").value.trim();
+      const progressBox = document.getElementById("progressBox");
+
+      if (!name) {
+        progressBox.textContent = "Please enter student name first.";
+        return;
+      }
+
+      try {
+        const response = await fetch(BASE_URL + "/progress/" + name);
+        const data = await response.json();
+
+        if (data.response) {
+          progressBox.textContent = data.response;
+          return;
+        }
+
+        let output = `Total Doubts: ${data.total_doubt}\n\nSubject-wise:\n`;
+        for (let key in data.subjectwise) {
+          output += `${key}: ${data.subjectwise[key]}\n`;
+        }
+
+        progressBox.textContent = output;
+      } catch (error) {
+        progressBox.textContent = "Error loading progress.";
       }
     }
 
