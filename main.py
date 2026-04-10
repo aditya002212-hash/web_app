@@ -83,24 +83,19 @@ exam tips:
             if item['query'].lower() == query.lower() and item['mode'].lower() == mode.lower() :
                 return item['response']
     check_cache(query,mode)
-    try :
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
 
-        answer = response.text
-    except Exception:
-        answer='Server error. Please try again later'
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt)
 
+    
     profiledata[name]['history'].append({
         "query": query,
-        "response": answer,
+        "response": response.text,
         "subject": subject,
         "mode": mode
     })
-
-    return {"response": answer}
+    return {'answer': response.text}
 
 class Profile(BaseModel):
     name: str
