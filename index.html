@@ -1,189 +1,177 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Mentor</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
       background: #f5f5f5;
-      padding: 20px;
     }
+
     .container {
-      max-width: 700px;
-      margin: auto;
       background: white;
-      padding: 20px;
-      border-radius: 10px;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
-    h2 {
-      text-align: center;
+
+    h1 {
+      margin-bottom: 20px;
     }
-    input, textarea, select {
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
     }
-    button {
-      padding: 10px;
-      width: 100%;
-      background: #007bff;
-      color: white;
-      border: none;
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .button-row button {
+      width: auto;
+      flex: 1;
       cursor: pointer;
     }
-    .response {
+
+    .answer-box {
       margin-top: 20px;
-      background: #eee;
-      padding: 10px;
+      padding: 16px;
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       white-space: pre-wrap;
+      min-height: 120px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .loading {
+      color: #444;
     }
   </style>
 </head>
-
 <body>
+  <div class="container">
+    <h1>AI Mentor for JEE/NEET</h1>
 
-<div class="container">
-  <h2>AI Mentor</h2>
+    <label for="name">Student Name</label>
+    <input type="text" id="name" placeholder="Enter your name" />
 
-  <!-- Profile Section -->
-  <h3>Add Profile</h3>
-  <input id="name" placeholder="Name">
-  <input id="class" placeholder="Current Class">
-  <input id="exam" placeholder="Target Exam">
-  <input id="weak" placeholder="Weak Subject">
+    <label for="subject">Subject</label>
+    <select id="subject">
+      <option value="Physics">Physics</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Maths">Maths</option>
+      <option value="Biology">Biology</option>
+    </select>
 
-  <button onclick="addProfile()">Add Profile</button>
+    <label for="mode">Mode</label>
+    <select id="mode">
+      <option value="exam mode">Exam Mode</option>
+      <option value="quick doubt mode">Quick Doubt Mode</option>
+      <option value="depth mode">Depth Mode</option>
+    </select>
 
-  <hr>
+    <label for="question">Your Doubt</label>
+    <textarea id="question" placeholder="Ask your doubt here..."></textarea>
 
-  <!-- Doubt Section -->
-  <h3>Ask Doubt</h3>
-  <input id="d_name" placeholder="Name (same as profile)">
-  
-  <select id="subject">
-    <option>Physics</option>
-    <option>Chemistry</option>
-    <option>Maths</option>
-    <option>Biology</option>
-  </select>
+    <div class="button-row">
+      <button onclick="askDoubt()">Ask Doubt</button>
+      <button onclick="clearForm()">Clear</button>
+    </div>
 
-  <select id="mode">
-    <option>quick doubt mode</option>
-    <option>exam mode</option>
-    <option>depth mode</option>
-  </select>
+    <div id="status" class="status"></div>
 
-  <textarea id="query" placeholder="Enter your doubt"></textarea>
+    <h3>Answer</h3>
+    <div id="answer" class="answer-box">Your answer will appear here...</div>
+  </div>
 
-  <button onclick="askDoubt()">Ask</button>
+  <script>
+    async function askDoubt() {
+      const name = document.getElementById("name").value.trim();
+      const subject = document.getElementById("subject").value;
+      const mode = document.getElementById("mode").value;
+      const question = document.getElementById("question").value.trim();
 
-  <div class="response" id="response">Response will appear here...</div>
-</div>
+      const status = document.getElementById("status");
+      const answerBox = document.getElementById("answer");
 
-<h3>Weak Topic Analysis</h3>
-<div class="card">
-  <input id="analysis_name" placeholder="Student Name">
-  <button onclick="showWeakTopicAnalysis()">Show Weak Topic Analysis</button>
-  <div class="response" id="weakAnalysis">Weak topic analysis will appear here...</div>
-</div>
+      if (!name || !question) {
+        status.textContent = "Please enter your name and doubt.";
+        status.className = "status error";
+        return;
+      }
 
-<h3>Progress</h3>
-<div class="card">
-  <input id="progress_name" placeholder="Student Name">
-  <button onclick="showProgress()">Show Progress</button>
-  <div class="response" id="progressBox">Progress will appear here...</div>
-</div>
+      status.textContent = "Thinking...";
+      status.className = "status loading";
+      answerBox.textContent = "";
 
+      try {
+        const response = await fetch("http://127.0.0.1:8000/ask-doubt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: name,
+            subject: subject,
+            mode: mode,
+            query: question
+          })
+        });
 
-<script>
-const BASE_URL = "http://127.0.0.1:8000";
+        const data = await response.json();
 
-async function addProfile() {
-  const data = {
-    name: document.getElementById("name").value,
-    current_class: document.getElementById("class").value,
-    target_exam: document.getElementById("exam").value,
-    weak_subject: document.getElementById("weak").value
-  };
+        if (!response.ok) {
+          throw new Error(data.response || "Something went wrong");
+        }
 
-  const res = await fetch(BASE_URL + "/addprofile", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  });
-
-  const result = await res.json();
-  alert(result.message || "Profile added");
-}
-
-async function askDoubt() {
-  const data = {
-    name: document.getElementById("d_name").value,
-    subject: document.getElementById("subject").value,
-    mode: document.getElementById("mode").value,
-    query: document.getElementById("query").value
-  };
-
-  const res = await fetch(BASE_URL + "/ask-doubt", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(data)
-  });
-
-  const result = await res.json();
-  document.getElementById("response").innerText = result.response || "No response";
-}
-
-async function showWeakTopicAnalysis() {
-  const name = document.getElementById("analysis_name").value;
-
-  try {
-    const res = await fetch(BASE_URL + "/weak_topic/" + name);
-    const result = await res.json();
-
-    if (result.response) {
-      document.getElementById("weakAnalysis").innerText = result.response;
-      return;
+        answerBox.textContent = data.response || "No response received.";
+        status.textContent = "Done.";
+        status.className = "status";
+      } catch (error) {
+        answerBox.textContent = "";
+        status.textContent = "Error: " + error.message;
+        status.className = "status error";
+      }
     }
 
-    let output = "Weak Subject: " + result.weak_subject + "\n\nDetails:\n";
-
-    for (let key in result.details) {
-      output += key + " : " + result.details[key] + " doubts\n";
+    function clearForm() {
+      document.getElementById("question").value = "";
+      document.getElementById("answer").textContent = "Your answer will appear here...";
+      document.getElementById("status").textContent = "";
     }
-
-    document.getElementById("weakAnalysis").innerText = output;
-  } catch (error) {
-    document.getElementById("weakAnalysis").innerText = "Error loading weak topic analysis.";
-  }
-}
-
-async function showProgress() {
-  const name = document.getElementById("progress_name").value;
-
-  try {
-    const res = await fetch(BASE_URL + "/progress/" + name);
-    const result = await res.json();
-
-    if (result.response) {
-      document.getElementById("progressBox").innerText = result.response;
-      return;
-    }
-
-    let output = "Total Doubts: " + result.total_doubt + "\n\nSubject-wise Progress:\n";
-
-    for (let key in result.subjectwise) {
-      output += key + " : " + result.subjectwise[key] + "\n";
-    }
-
-    document.getElementById("progressBox").innerText = output;
-  } catch (error) {
-    document.getElementById("progressBox").innerText = "Error loading progress.";
-  }
-}
-
-
-</script>
-
+  </script>
 </body>
 </html>
