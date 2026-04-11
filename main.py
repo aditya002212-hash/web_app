@@ -11,11 +11,15 @@ web_app=FastAPI()
 
 web_app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 profiledata = {}
 
@@ -78,11 +82,7 @@ exam tips:
     if len(data.query.lower())<=10:
         return {"response": "Please provide a more detailed doubt for better assistance."}
     
-    def check_cache(query,mode):
-        for item in profiledata[name]['history']:
-            if item['query'].lower() == query.lower() and item['mode'].lower() == mode.lower() :
-                return item['response']
-    check_cache(query,mode)
+    
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -120,7 +120,7 @@ def student_profile(name:str):
     if name not in profiledata:
         return{'response ': 'profile not found'}
     else:
-        return{'history':profiledata['name']['history']}
+        return{'history':profiledata[name]['history']}
 
 
 @web_app.get('/weak_topic/{name}')
