@@ -102,6 +102,9 @@ class Profile(BaseModel):
     current_class: str
     target_exam: str
     weak_subject: str
+@web_app.get('/askprofile')
+def greet():
+    return{'WELCOME': 'Hello HOW ARE YOU !!'}
     
 
 @web_app.post("/addprofile")
