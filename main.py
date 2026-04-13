@@ -42,7 +42,32 @@ def ask_doubt(data: Doubt):
     if name not in profiledata:
         return {'response':'profile not found make your profile first'}
     student=profiledata[name]
+    def load_data():
+        with open('physics.txt','r') as f:
+            return f.read()
+    def search_query(query,context):
+        lines=context.split('\n')
+        relvant=[]
+        for line in lines :
+            if query.lower()  in line.lower():
+                relvant.append(line)
+        return '\n'.join(relvant[:5])
+    knowledge=load_data()
+    context=search_query(query,knowledge)
+    if context:
+        prompt=f'''
 
+Use the following study material to answer:
+
+{context}
+
+Student doubt:
+{query}
+
+Answer clearly and exam-focused.
+'''
+        response=client.models.generate_content(model='gemini-2.5-flash',contents=prompt)
+        return {'answer':response}
     prompt = f"""
 
 You are a top Kota mentor for {subject}.
@@ -106,6 +131,8 @@ def followup(need:follow):
     3. if you do not found info or any relevancy admit it 
     4. answer must be allign with the user need in user_response---{user_response}
     '''
+    response=client.models.generate_content(model='gemini-2.5-flash',contents=prompt)
+    return {'answer':response}
 
 
 class Profile(BaseModel):
