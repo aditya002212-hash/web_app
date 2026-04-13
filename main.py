@@ -55,6 +55,7 @@ def ask_doubt(data: Doubt):
     knowledge=load_data()
     context=search_query(query,knowledge)
     if context:
+        
         prompt=f'''
 
 Use the following study material to answer:
@@ -68,6 +69,8 @@ Answer clearly and exam-focused.
 '''
         response=client.models.generate_content(model='gemini-2.5-flash',contents=prompt)
         return {'answer':response}
+     
+        
     prompt = f"""
 
 You are a top Kota mentor for {subject}.
