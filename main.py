@@ -91,6 +91,23 @@ Output format:
     })
     return {'answer': response.text}
 
+class follow(BaseModel):
+    need:str
+    name:str
+@web_app.post('/followup')
+def followup(need:follow):
+    user_response=need.need
+    name=need.name
+    prompt=f'''based on previous history {profiledata[name]['history'][-1]}
+    and the user_response --{user_response} guide the answer 
+    constraints----
+    1. be straight forward and do not add noise 
+    2. do not make up answer 
+    3. if you do not found info or any relevancy admit it 
+    4. answer must be allign with the user need in user_response---{user_response}
+    '''
+
+
 class Profile(BaseModel):
     name: str
     current_class: str
