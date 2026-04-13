@@ -1,0 +1,8 @@
+Kirchhoff’s Law:
+There are two laws:
+1. Junction rule: sum of currents = 0
+2. Loop rule: sum of voltage = 0
+
+Ohm’s Law:
+V = IR
+Voltage is proportional to current.

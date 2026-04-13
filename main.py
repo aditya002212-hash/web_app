@@ -134,19 +134,7 @@ def student_profile(name:str):
         return{'history':profiledata[name]['history']}
 
 
-@web_app.get('/weak_topic/{name}')
-def weak_topic(name:str):
-    count={}
-    if name not in profiledata:
-        return {'response':'add your profile '}
-    for item in profiledata[name]['history']:
-        sub=item['subject']
-        count[sub]=count.get(sub,0)+1
-    if not count:
-        return 'no data availabe'
-    weak=max(count,key=count.get)
-    return{'weak_subject':weak,
-           'details':count}
+
 @web_app.get('/progress/{name}')
 def progress(name:str):
     if name not in profiledata:
